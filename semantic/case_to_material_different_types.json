@@ -1,0 +1,33 @@
+{
+  "class_to_id": {
+    "sloth": 0,
+    "zebra": 1,
+    "cloth": 2,
+    "rope": 3,
+    "dinosor": 4
+  },
+  "case_to_material": {
+    "single_push_sloth": "sloth",
+    "single_push_rope_4": "rope",
+    "single_push_rope_1": "rope",
+    "single_push_rope": "rope",
+    "single_lift_zebra": "zebra",
+    "single_lift_sloth": "sloth",
+    "single_lift_rope": "rope",
+    "single_lift_dinosor": "dinosor",
+    "single_lift_cloth_4": "cloth",
+    "single_lift_cloth_3": "cloth",
+    "single_lift_cloth_1": "cloth",
+    "single_lift_cloth": "cloth",
+    "single_clift_cloth_3": "cloth",
+    "single_clift_cloth_1": "cloth",
+    "rope_double_hand": "rope",
+    "double_stretch_zebra": "zebra",
+    "double_stretch_sloth": "sloth",
+    "double_lift_zebra": "zebra",
+    "double_lift_sloth": "sloth",
+    "double_lift_cloth_3": "cloth",
+    "double_lift_cloth_1": "cloth",
+    "weird_package": "cloth"
+  }
+}
