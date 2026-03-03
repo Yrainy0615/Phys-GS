@@ -56,13 +56,18 @@ class ParamNet(nn.Module):
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--base_path", type=str, required=True)
+    parser.add_argument("--base_path", type=str, default="data/different_types")
     parser.add_argument("--sem_cache_dir", type=str, default="semantic/cache")
     parser.add_argument("--experiments_dir", type=str, default="experiments")
-    parser.add_argument("--case_to_material", type=str, required=True)
+    parser.add_argument(
+        "--experiments_optimization_dir",
+        type=str,
+        default="experiments_optimization",
+    )
+    parser.add_argument("--case_to_material", type=str, default="semantic/case_to_material_different_types.json")
     parser.add_argument("--save_dir", type=str, default="semantic/checkpoints")
 
-    parser.add_argument("--batch_size", type=int, default=2)
+    parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--num_workers", type=int, default=0)
     parser.add_argument("--epochs", type=int, default=100)
     parser.add_argument("--lr", type=float, default=1e-3)
@@ -86,6 +91,7 @@ def main() -> None:
         base_path=args.base_path,
         sem_cache_dir=args.sem_cache_dir,
         experiments_dir=args.experiments_dir,
+        experiments_optimization_dir=args.experiments_optimization_dir,
         case_to_material_path=args.case_to_material,
         use_knn_topology=args.use_knn_topology,
         object_knn=args.object_knn,
