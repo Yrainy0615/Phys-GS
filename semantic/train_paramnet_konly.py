@@ -65,7 +65,7 @@ def main() -> None:
         default="experiments_optimization",
     )
     parser.add_argument("--case_to_material", type=str, default="semantic/case_to_material_different_types.json")
-    parser.add_argument("--save_dir", type=str, default="semantic/checkpoints")
+    parser.add_argument("--save_dir", type=str, default="checkpoints")
 
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--num_workers", type=int, default=0)
