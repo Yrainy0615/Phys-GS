@@ -38,6 +38,11 @@ if __name__ == "__main__":
         type=str,
         default="./gaussian_output",
     )
+    parser.add_argument(
+        "--base_dir",
+        type=str,
+        default="./experiments",
+    )
     parser.add_argument("--case_name", type=str, default="double_stretch_sloth")
     args = parser.parse_args()
 
@@ -49,7 +54,7 @@ if __name__ == "__main__":
     else:
         cfg.load_from_yaml("configs/real.yaml")
 
-    base_dir = f"./experiments/{case_name}"
+    base_dir = f"{args.base_dir}/{case_name}"
 
     # Read the first-satage optimized parameters to set the indifferentiable parameters
     optimal_path = f"./experiments_optimization/{case_name}/optimal_params.pkl"

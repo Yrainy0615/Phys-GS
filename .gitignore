@@ -10,3 +10,7 @@
 data_process/groundedSAM_checkpoints/groundingdino_swint_ogc.pth
 data_process/groundedSAM_checkpoints/sam2.1_hiera_large.pt
 checkpoints
+semantic/tb_logs
+#pyc 
+*.pyc
+/experiments_k_teacher

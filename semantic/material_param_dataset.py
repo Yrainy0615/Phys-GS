@@ -155,8 +155,9 @@ class MaterialParamDataset(Dataset):
         return case_to_material_id, class_to_id
 
     def _build_sample(self, case_name: str) -> Dict[str, torch.Tensor]:
+        case_dir = os.path.join(self.cfg.base_path, case_name)
         points = _load_structure_points(
-            os.path.join(self.cfg.base_path, case_name, "final_data.pkl")
+            os.path.join(case_dir, "final_data.pkl")
         )
         topology_cfg = self._load_topology_from_optimization(case_name)
         edges = _build_object_edges_open3d(
@@ -183,6 +184,7 @@ class MaterialParamDataset(Dataset):
         )
         num_object_springs = int(ckpt.get("num_object_springs", ckpt["spring_Y"].numel()))
         teacher_k = ckpt["spring_Y"].float().view(-1, 1)[:num_object_springs]
+        base_spring_y = ckpt["spring_Y"].float().view(-1)
         if teacher_k.shape[0] != edges.shape[0]:
             raise ValueError(
                 f"teacher_k size mismatch for {case_name}: {teacher_k.shape[0]} vs {edges.shape[0]} "
@@ -193,12 +195,37 @@ class MaterialParamDataset(Dataset):
                 f"object_max_neighbours={topology_cfg['object_max_neighbours']})"
             )
 
+        split_path = os.path.join(case_dir, "split.json")
+        with open(split_path, "r") as f:
+            split = json.load(f)
+        train_frame = int(split["train"][1])
+
+        metadata_path = os.path.join(case_dir, "metadata.json")
+        with open(metadata_path, "r") as f:
+            metadata = json.load(f)
+        intrinsics = np.asarray(metadata["intrinsics"], dtype=np.float32)
+        with open(os.path.join(case_dir, "calibrate.pkl"), "rb") as f:
+            c2ws = np.asarray(pickle.load(f), dtype=np.float32)
+        w2cs = np.linalg.inv(c2ws).astype(np.float32)
+        wh = np.asarray(metadata["WH"], dtype=np.int64)
+
         return {
             "case_name": case_name,
+            "case_dir": case_dir,
+            "final_data_path": os.path.join(case_dir, "final_data.pkl"),
+            "train_frame": torch.tensor(train_frame, dtype=torch.long),
+            "cam0_intrinsics": torch.from_numpy(intrinsics[0]).float(),
+            "cam0_w2c": torch.from_numpy(w2cs[0]).float(),
+            "wh": torch.from_numpy(wh).long(),
             "edges": torch.from_numpy(edges).long(),
             "z_geo": torch.from_numpy(z_geo).float(),
             "z_sem": torch.from_numpy(z_sem).float(),
             "teacher_logk": teacher_k.log(),
+            "base_spring_y": base_spring_y,
+            "collide_elas": ckpt["collide_elas"].float().view(1),
+            "collide_fric": ckpt["collide_fric"].float().view(1),
+            "collide_object_elas": ckpt["collide_object_elas"].float().view(1),
+            "collide_object_fric": ckpt["collide_object_fric"].float().view(1),
             "material_id": torch.tensor(int(self.case_to_material[case_name]), dtype=torch.long),
         }
 
@@ -238,18 +265,40 @@ class MaterialParamDataset(Dataset):
 def collate_graph_batch(batch: List[Dict[str, torch.Tensor]]) -> Dict[str, List[torch.Tensor]]:
     out: Dict[str, List[torch.Tensor]] = {
         "case_name": [],
+        "case_dir": [],
+        "final_data_path": [],
+        "train_frame": [],
+        "cam0_intrinsics": [],
+        "cam0_w2c": [],
+        "wh": [],
         "edges": [],
         "z_geo": [],
         "z_sem": [],
         "teacher_logk": [],
+        "base_spring_y": [],
+        "collide_elas": [],
+        "collide_fric": [],
+        "collide_object_elas": [],
+        "collide_object_fric": [],
         "material_id": [],
     }
     for sample in batch:
         out["case_name"].append(sample["case_name"])
+        out["case_dir"].append(sample["case_dir"])
+        out["final_data_path"].append(sample["final_data_path"])
+        out["train_frame"].append(sample["train_frame"])
+        out["cam0_intrinsics"].append(sample["cam0_intrinsics"])
+        out["cam0_w2c"].append(sample["cam0_w2c"])
+        out["wh"].append(sample["wh"])
         out["edges"].append(sample["edges"])
         out["z_geo"].append(sample["z_geo"])
         out["z_sem"].append(sample["z_sem"])
         out["teacher_logk"].append(sample["teacher_logk"])
+        out["base_spring_y"].append(sample["base_spring_y"])
+        out["collide_elas"].append(sample["collide_elas"])
+        out["collide_fric"].append(sample["collide_fric"])
+        out["collide_object_elas"].append(sample["collide_object_elas"])
+        out["collide_object_fric"].append(sample["collide_object_fric"])
         out["material_id"].append(sample["material_id"])
     return out
 
